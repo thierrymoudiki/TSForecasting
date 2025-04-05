@@ -6,9 +6,9 @@
 #
 # If a model fails to provide forecasts, it will return snaive forecasts
 
-utils::install.packages("reticulate")
+#utils::install.packages("reticulate")
 
-library("reticulate")
+#library("reticulate")
 
 reticulate::py_install(c("nnetsauce", "scikit-learn", "numpy"))
 
@@ -29,7 +29,8 @@ get_nsridgecv_forecasts <- function(time_series, forecast_horizon){
     # Fit the model
     model$fit(values_reshaped)
     # Predict for the next forecast_horizon time steps
-    return(model$predict(h = as.integer(forecast_horizon)))
+    freq <- frequency(time_series)
+    return(ts(model$predict(h = as.integer(forecast_horizon)), start = end(time_series)+1/freq, frequency = freq))
   }, error = function(e) {
     warning(e)
     get_snaive_forecasts(time_series, forecast_horizon)

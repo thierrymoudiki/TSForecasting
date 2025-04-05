@@ -1,4 +1,8 @@
-BASE_DIR <- "TSForecasting"
+library(dplyr)
+library(tsibble)
+library(forecast)
+
+BASE_DIR <- "."
 
 source(file.path(BASE_DIR, "utils", "data_loader.R", fsep = "/"))
 source(file.path(BASE_DIR, "utils", "error_calculator.R", fsep = "/"))
@@ -57,6 +61,19 @@ find_train_test_lengths <- function(data, contain_equal_length = TRUE, split = T
   list(train_seres_length, test_series_length)
 }
 
+# Create all required directories upfront
+create_required_directories <- function() {
+  dirs <- c(
+    file.path(BASE_DIR, "results"),
+    file.path(BASE_DIR, "results", "rolling_origin_forecasts"),
+    file.path(BASE_DIR, "results", "rolling_origin_errors"),
+    file.path(BASE_DIR, "results", "rolling_origin_execution_times")
+  )
+  
+  for (dir in dirs) {
+    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+  }
+}
 
 # This function performs the rolling origin evaluation
 #
@@ -70,6 +87,8 @@ find_train_test_lengths <- function(data, contain_equal_length = TRUE, split = T
 # index - the name of the time attribute that should be used as the index when creating the tsibble
 # integer_conversion - whether the forecasts should be rounded or not
 do_rolling_origin_forecating <- function(dataset_name, method, input_file_name, key = NULL, index = NULL, integer_conversion = FALSE){
+  # Create directories first
+  create_required_directories()
   
   print(paste0("Started ", dataset_name))
   
@@ -99,8 +118,6 @@ do_rolling_origin_forecating <- function(dataset_name, method, input_file_name, 
   start_time <- Sys.time()
   
   print("started Rolling Origin")
-  
-  dir.create(file.path(BASE_DIR, "results", "rolling_origin_forecasts", fsep = "/"), showWarnings = FALSE)
   
   for(s in seq_along(all_serie_names)){
     series_data <- dataset[dataset$series_name == as.character(all_serie_names[s]), ]
@@ -154,13 +171,25 @@ do_rolling_origin_forecating <- function(dataset_name, method, input_file_name, 
       
       series_forecasts <- c(series_forecasts, f)
       
-      train_series_data <- rbind(train_series_data, test_series_data[i,])
+      train_series_data <- dplyr::bind_rows(train_series_data, test_series_data[i,])
     }
     
     if(integer_conversion)
       series_forecasts <- round(series_forecasts)
     
-    write.table(t(c(all_serie_names[s], series_forecasts)), file.path(BASE_DIR, "results", "rolling_origin_forecasts", output_file_name, fsep = "/"), row.names = FALSE, col.names = FALSE, sep = ",", quote = FALSE, append = TRUE)
+    # Add error handling for file operations
+    tryCatch({
+      forecast_file <- file.path(BASE_DIR, "results", "rolling_origin_forecasts", output_file_name)
+      write.table(t(c(all_serie_names[s], series_forecasts)), 
+                  forecast_file,
+                  row.names = FALSE, 
+                  col.names = FALSE, 
+                  sep = ",", 
+                  quote = FALSE, 
+                  append = TRUE)
+    }, error = function(e) {
+      warning(paste("Error writing forecasts to file:", e$message))
+    })
     
     train_series_data <- train_series_data[[VALUE_COL_NAME]][1:split]
     test_series_data <- test_series_data[[VALUE_COL_NAME]]
@@ -181,19 +210,27 @@ do_rolling_origin_forecating <- function(dataset_name, method, input_file_name, 
   print("Finished rolling origin")
   
   # Error calculations
-  dir.create(file.path(BASE_DIR, "results", "rolling_origin_errors", fsep = "/"), showWarnings = FALSE)
   calculate_errors(forecast_matrix, actual_matrix, train_list, seasonality, file.path(BASE_DIR, "results", "rolling_origin_errors", paste0(dataset_name, "_", method), fsep = "/"))
   
   # Execution time
   exec_time <- end_time - start_time
   print(exec_time)
-  dir.create(file.path(BASE_DIR, "results", "rolling_origin_execution_times", fsep = "/"), showWarnings = FALSE)
-  write(paste(exec_time, attr(exec_time, "units")), file = file.path(BASE_DIR, "results", "rolling_origin_execution_times", output_file_name, fsep = "/"), append = FALSE)
+  
+  # Add error handling for execution time writing
+  tryCatch({
+    exec_time_file <- file.path(BASE_DIR, "results", "rolling_origin_execution_times", output_file_name)
+    write(paste(exec_time, attr(exec_time, "units")), 
+          file = exec_time_file, 
+          append = FALSE)
+  }, error = function(e) {
+    warning(paste("Error writing execution time to file:", e$message))
+  })
 }
 
 
 # Example of usage
 
+do_rolling_origin_forecating("sample", "nsridgecv", "sample.tsf", "series_name", "start_timestamp")
 #do_rolling_origin_forecating("sample", "theta", "sample.tsf", "series_name", "start_timestamp")
 #do_rolling_origin_forecating("sample", "ses", "sample.tsf", "series_name", "start_timestamp")
 #do_rolling_origin_forecating("sample", "tbats", "sample.tsf", "series_name", "start_timestamp")
