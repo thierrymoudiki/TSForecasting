@@ -6,6 +6,35 @@
 #
 # If a model fails to provide forecasts, it will return snaive forecasts
 
+utils::install.packages("reticulate")
+
+library("reticulate")
+
+reticulate::py_install(c("nnetsauce", "scikit-learn", "numpy"))
+
+ns <- reticulate::import("nnetsauce")
+sklearn_linear_model <- reticulate::import("sklearn.linear_model")
+np <- reticulate::import("numpy")
+
+get_nsridgecv_forecasts <- function(time_series, forecast_horizon){
+  tryCatch({
+    # Import required Python libraries    
+    regr <- sklearn_linear_model$RidgeCV(alphas=10**seq(-5, 5, length.out=50))
+    # Initialize the MTS model with RidgeCV
+    model <- ns$MTS(regr, lags=25L)
+    # Ensure values are numeric and convert to a NumPy array
+    values <- np$array(as.numeric(time_series))  # Explicitly convert to a NumPy array
+    # Reshape the values array to a 2D array (required by scikit-learn)
+    values_reshaped <- np$reshape(values, c(-1L, 1L))  # Use explicit integer literals (-1L, 1L)
+    # Fit the model
+    model$fit(values_reshaped)
+    # Predict for the next forecast_horizon time steps
+    return(model$predict(h = as.integer(forecast_horizon)))
+  }, error = function(e) {
+    warning(e)
+    get_snaive_forecasts(time_series, forecast_horizon)
+  })
+}
 
 # Calculate ets forecasts
 get_ets_forecasts <- function(time_series, forecast_horizon){

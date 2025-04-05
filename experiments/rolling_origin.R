@@ -127,6 +127,8 @@ do_rolling_origin_forecating <- function(dataset_name, method, input_file_name, 
       
       if(method == "ets")
         f <- get_ets_forecasts(series, ROLLING_ORIGIN_FORECAST_HORIZON)
+      else if(method == "nsridgecv")
+        f <- get_nsridgecv_forecasts(series, ROLLING_ORIGIN_FORECAST_HORIZON)
       else if(method == "theta")
         f <- get_theta_forecasts(series, ROLLING_ORIGIN_FORECAST_HORIZON)
       else if(method == "arima"){
@@ -191,7 +193,8 @@ do_rolling_origin_forecating <- function(dataset_name, method, input_file_name, 
 
 
 # Example of usage
-do_rolling_origin_forecating("sample", "theta", "sample.tsf", "series_name", "start_timestamp")
-do_rolling_origin_forecating("sample", "ses", "sample.tsf", "series_name", "start_timestamp")
-do_rolling_origin_forecating("sample", "tbats", "sample.tsf", "series_name", "start_timestamp")
-do_rolling_origin_forecating("sample", "dhr_arima", "sample.tsf", "series_name", "start_timestamp")
+
+#do_rolling_origin_forecating("sample", "theta", "sample.tsf", "series_name", "start_timestamp")
+#do_rolling_origin_forecating("sample", "ses", "sample.tsf", "series_name", "start_timestamp")
+#do_rolling_origin_forecating("sample", "tbats", "sample.tsf", "series_name", "start_timestamp")
+#do_rolling_origin_forecating("sample", "dhr_arima", "sample.tsf", "series_name", "start_timestamp")
