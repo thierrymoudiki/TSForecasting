@@ -1,3 +1,4 @@
+BASE_DIR <- "."
 source(file.path(BASE_DIR, "utils", "data_loader.R", fsep = "/"))
 source(file.path(BASE_DIR, "utils", "error_calculator.R", fsep = "/"))
 source(file.path(BASE_DIR, "utils", "global_model_helper.R", fsep = "/"))
