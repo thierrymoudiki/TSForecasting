@@ -1,3 +1,16 @@
+```R
+source("./models/local_univariate_models.R")
+source("./experiments/fixed_horizon_functions.R"
+)
+do_fixed_horizon_local_forecasting(
+    "tourism_yearly",
+    "nsridgecv",
+    "tourism_yearly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
+```
+
 # TSForecasting
 This repository contains the implementations related to the experiments of a set of publicly available datasets that are used in the time series forecasting research space.
 

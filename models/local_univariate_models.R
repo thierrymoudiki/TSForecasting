@@ -16,24 +16,35 @@ ns <- reticulate::import("nnetsauce")
 sklearn_linear_model <- reticulate::import("sklearn.linear_model")
 np <- reticulate::import("numpy")
 
-get_nsridgecv_forecasts <- function(time_series, forecast_horizon){
+get_nsridgecv_forecasts <- function(time_series, forecast_horizon) {
   tryCatch({
     # Import required Python libraries    
     regr <- sklearn_linear_model$RidgeCV(alphas=10**seq(-5, 5, length.out=50))
-    # Initialize the MTS model with RidgeCV
-    model <- ns$MTS(regr, lags=25L)
+    
+    # Use max 15 lags, but no more than series length
+    ts_length <- length(time_series)
+    min_lags <- min(15L, ts_length - forecast_horizon)
+    
+    if (ts_length < (min_lags + forecast_horizon)) {
+      return(get_snaive_forecasts(time_series, forecast_horizon))
+    }
+    
+    # Initialize the MTS model with adaptive lags
+    model <- ns$MTS(regr, lags=min_lags)
+    
     # Ensure values are numeric and convert to a NumPy array
-    values <- np$array(as.numeric(time_series))  # Explicitly convert to a NumPy array
-    # Reshape the values array to a 2D array (required by scikit-learn)
-    values_reshaped <- np$reshape(values, c(-1L, 1L))  # Use explicit integer literals (-1L, 1L)
-    # Fit the model
+    values <- np$array(as.numeric(time_series))
+    values_reshaped <- np$reshape(values, c(-1L, 1L))
+    
+    # Fit and predict
     model$fit(values_reshaped)
-    # Predict for the next forecast_horizon time steps
-    freq <- frequency(time_series)
-    return(ts(model$predict(h = as.integer(forecast_horizon)), start = end(time_series)+1/freq, frequency = freq))
+    predictions <- model$predict(h = as.integer(forecast_horizon))
+    
+    # Return predictions as a time series
+    ts(predictions, frequency = frequency(time_series))
   }, error = function(e) {
-    warning(e)
-    get_snaive_forecasts(time_series, forecast_horizon)
+    warning(paste("nsridgecv error:", e$message))
+    return(get_snaive_forecasts(time_series, forecast_horizon))
   })
 }
 
