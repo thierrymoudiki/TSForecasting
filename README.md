@@ -9,6 +9,13 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "nsridgecv",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
 ```
 
 # TSForecasting
