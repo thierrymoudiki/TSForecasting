@@ -14,25 +14,68 @@ reticulate::py_install(c("nnetsauce", "scikit-learn", "numpy", "lightgbm"))
 
 ns <- reticulate::import("nnetsauce")
 sklearn_linear_model <- reticulate::import("sklearn.linear_model")
+sklearn_ensemble <- reticulate::import("sklearn.ensemble")
+sklearn_network <- reticulate::import("sklearn.neural_network")
+sklearn_neighbors <- reticulate::import("sklearn.neighbors")
+sklearn_tree <- reticulate::import("sklearn.tree")
+sklearn_gaussian_process <- reticulate::import("sklearn.gaussian_process")
+sklearn_kernel <- reticulate::import("sklearn.kernel_ridge")
 np <- reticulate::import("numpy")
 lgb <- reticulate::import("lightgbm")
 
-get_nslinearmodel_forecasts <- function(time_series, forecast_horizon, model = NULL) {
+get_nsmodel_forecasts <- function(time_series, forecast_horizon, model = NULL) {
   tryCatch({
     # Import required Python libraries 
     model_choice <- switch(
       model,
-      "nselasticnetcv" = "ElasticNetCV()",
-      "nsridgecv" = "RidgeCV()",
-      "nslassocv" = "LassoCV()",
-      "nslassolarscv" = "LassoLarsCV()",
-      "nsridge" = "Ridge()",
-      "nslassso" = "Lasso()",
-      "nslinear" = "LinearRegression()",
+      "ElasticNetCV" = "ElasticNetCV()",
+      "RidgeCV" = "RidgeCV()",
+      "LassoCV" = "LassoCV()",
+      "LassoLarsCV" = "LassoLarsCV()",
+      "ElasticNet" = "ElasticNet()",
+      "Ridge" = "Ridge()",
+      "Lasso" = "Lasso()",
+      "LinearRegression" = "LinearRegression()",
+      "AdaBoostRegressor" = "AdaBoostRegressor()",
+      "GradientBoostingRegressor" = "GradientBoostingRegressor()",
+      "RandomRegressor" = "RandomForestRegressor()",
+      "BaggingRegressor" = "BaggingRegressor()",
+      "MLPRegressor" = "MLPRegressor()",
+      "KernelRidgeRegressor" = "KernelRidgeRegressor()",
+      "GaussianProcessRegressor" = "GaussianProcessRegressor()",
+      "KNeighborsRegressor" = "KNeighborsRegressor()",
+      "LGBMRegressor" = "LGBMRegressor(verbosity=-1L)",
       stop("Invalid model choice")
-    )   
+    )
     # Use the mapped model_choice instead of direct model name
-    regr <- eval(parse(text = paste0("sklearn_linear_model$", model_choice)))
+    if (model %in% c("ElasticNetCV", "RidgeCV", "LassoCV", "LassoLarsCV", "ElasticNet", "Ridge", "Lasso", "LinearRegression")) {      
+      regr <- eval(parse(text = paste0("sklearn_linear_model$", model_choice)))
+    }
+
+    if (model %in% c("AdaBoostRegressor", "GradientBoostingRegresssor", 
+    "RandomRegressor", "BaggingRegressor")) {
+      regr <- eval(parse(text = paste0("sklearn_ensemble$", model_choice)))
+    }
+
+    if (model == "MLPRegressor") {
+      regr <- eval(parse(text = paste0("sklearn_network$", model_choice)))
+    }
+
+    if (model == "GaussianProcessRegressor") {
+      regr <- eval(parse(text = paste0("sklearn_gaussian_process$", model_choice)))
+    }
+
+    if (model == "KNeighborsRegressor") {
+      regr <- eval(parse(text = paste0("sklearn_neighbors$", model_choice)))
+    }
+
+    if (model == "KernelRidgeRegressor") {
+      regr <- eval(parse(text = paste0("sklearn_kernelridge$", model_choice)))
+    }
+
+    if (model == "LGBMRegressor") {      
+      regr <- eval(parse(text = paste0("lgb$", model_choice)))
+    }    
     
     # Use max 15 lags, but no more than series length
     ts_length <- length(time_series)
@@ -42,7 +85,9 @@ get_nslinearmodel_forecasts <- function(time_series, forecast_horizon, model = N
       return(get_snaive_forecasts(time_series, forecast_horizon))
     } 
     # Initialize the MTS model with adaptive lags
-    model <- ns$MTS(regr, lags=as.integer(floor(min_lags)))
+    model <- ns$MTS(regr, 
+    lags=as.integer(floor(min_lags)), 
+    show_progress=FALSE)
     # Ensure values are numeric and convert to a NumPy array
     values <- np$array(as.numeric(time_series))
     values_reshaped <- np$reshape(values, c(-1L, 1L))
@@ -52,7 +97,7 @@ get_nslinearmodel_forecasts <- function(time_series, forecast_horizon, model = N
     # Return predictions as a time series
     ts(predictions, frequency = frequency(time_series))
   }, error = function(e) {
-    warning(sprintf("nslinearmodel error with %s: %s", model, e$message))
+    warning(sprintf("nsmodel error with %s: %s", model, e$message))
     return(get_snaive_forecasts(time_series, forecast_horizon))
   })
 }

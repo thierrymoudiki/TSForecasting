@@ -1,30 +1,55 @@
 ```R
 source("./models/local_univariate_models.R")
-source("./experiments/rolling_origin.R")
 source("./experiments/fixed_horizon_functions.R")
 
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "LGBMRegressor",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
 
 do_fixed_horizon_local_forecasting(
     "sample",
-    "nslassocv",
+    "LinearRegression",
     "sample.tsf",
     "series_name",
     "start_timestamp"
 )
+
 do_fixed_horizon_local_forecasting(
     "sample",
-    "nslassolarscv",
+    "Ridge",
     "sample.tsf",
     "series_name",
     "start_timestamp"
 )
+
 do_fixed_horizon_local_forecasting(
     "sample",
-    "nselasticnetcv",
+    "ElasticNet",
     "sample.tsf",
     "series_name",
     "start_timestamp"
 )
+
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "RandomRegressor",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "BaggingRegressor",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
 
 do_fixed_horizon_local_forecasting(
     "tourism_yearly",

@@ -41,9 +41,9 @@ for(f in seq_along(FREQUENCIES)){
 # external_forecast_horizon - the required forecast horizon, if it is not available in the .tsf file
 # integer_conversion - whether the forecasts should be rounded or not
 do_fixed_horizon_local_forecasting <- function(dataset_name, method, input_file_name, 
-                                             key = NULL, index = NULL, 
-                                             external_forecast_horizon = NULL, 
-                                             integer_conversion = FALSE) {
+                                               key = NULL, index = NULL, 
+                                               external_forecast_horizon = NULL, 
+                                               integer_conversion = FALSE) {
   # Setup environment
   source(file.path(BASE_DIR, "utils", "fixed_horizon_setup.R"))
   setup_fixed_horizon(dataset_name, method)
@@ -126,15 +126,11 @@ do_fixed_horizon_local_forecasting <- function(dataset_name, method, input_file_
       else
         series <- forecast:::msts(train_series_data[[VALUE_COL_NAME]], start = start_date, seasonal.periods = seasonality)
       
-      # Forecasting
-      
+      # Forecasting      
       current_method_forecasts <- try(eval(parse(text = paste0("get_", method, "_forecasts(series, forecast_horizon)"))), silent=TRUE)
       if (inherits(current_method_forecasts, "try-error"))
       {
-        if (method %in% c("nslassocv", "nsridgecv", "nslassolarscv", "nselasticnetcv"))
-        {
-          current_method_forecasts <- get_nslinearmodel_forecasts(series, forecast_horizon, model = method)
-        }
+        current_method_forecasts <- get_nsmodel_forecasts(series, forecast_horizon, model = method)        
       }
       
       if(typeof(current_method_forecasts) == "list")
