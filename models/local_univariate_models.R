@@ -10,42 +10,55 @@
 
 #library("reticulate")
 
-reticulate::py_install(c("nnetsauce", "scikit-learn", "numpy"))
+reticulate::py_install(c("nnetsauce", "scikit-learn", "numpy", "lightgbm"))
 
 ns <- reticulate::import("nnetsauce")
 sklearn_linear_model <- reticulate::import("sklearn.linear_model")
 np <- reticulate::import("numpy")
+lgb <- reticulate::import("lightgbm")
 
-get_nsridgecv_forecasts <- function(time_series, forecast_horizon) {
+get_nslinearmodel_forecasts <- function(time_series, forecast_horizon, model = NULL) {
   tryCatch({
-    # Import required Python libraries    
-    regr <- sklearn_linear_model$RidgeCV(alphas=10**seq(-5, 5, length.out=50))
+    # Import required Python libraries 
+    model_choice <- switch(
+      model,
+      "nselasticnetcv" = "ElasticNetCV()",
+      "nsridgecv" = "RidgeCV()",
+      "nslassocv" = "LassoCV()",
+      "nslassolarscv" = "LassoLarsCV()",
+      "nsridge" = "Ridge()",
+      "nslassso" = "Lasso()",
+      "nslinear" = "LinearRegression()",
+      stop("Invalid model choice")
+    )   
+    # Use the mapped model_choice instead of direct model name
+    regr <- eval(parse(text = paste0("sklearn_linear_model$", model_choice)))
     
     # Use max 15 lags, but no more than series length
     ts_length <- length(time_series)
-    min_lags <- min(15L, ts_length - forecast_horizon)
+    min_lags <- min(15L, ts_length - forecast_horizon)   
     
     if (ts_length < (min_lags + forecast_horizon)) {
       return(get_snaive_forecasts(time_series, forecast_horizon))
-    }
-    
+    } 
     # Initialize the MTS model with adaptive lags
-    model <- ns$MTS(regr, lags=min_lags)
-    
+    model <- ns$MTS(regr, lags=as.integer(floor(min_lags)))
     # Ensure values are numeric and convert to a NumPy array
     values <- np$array(as.numeric(time_series))
     values_reshaped <- np$reshape(values, c(-1L, 1L))
-    
     # Fit and predict
     model$fit(values_reshaped)
     predictions <- model$predict(h = as.integer(forecast_horizon))
-    
     # Return predictions as a time series
     ts(predictions, frequency = frequency(time_series))
   }, error = function(e) {
-    warning(paste("nsridgecv error:", e$message))
+    warning(sprintf("nslinearmodel error with %s: %s", model, e$message))
     return(get_snaive_forecasts(time_series, forecast_horizon))
   })
+}
+
+get_lgb_forecasts <- function(time_series, forecast_horizon) {
+  regr <- lgb$LGBMRegressor()
 }
 
 # Calculate ets forecasts

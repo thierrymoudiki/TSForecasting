@@ -1,7 +1,31 @@
 ```R
 source("./models/local_univariate_models.R")
-source("./experiments/fixed_horizon_functions.R"
+source("./experiments/rolling_origin.R")
+source("./experiments/fixed_horizon_functions.R")
+
+
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "nslassocv",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
 )
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "nslassolarscv",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "nselasticnetcv",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
 do_fixed_horizon_local_forecasting(
     "tourism_yearly",
     "nsridgecv",
@@ -10,9 +34,23 @@ do_fixed_horizon_local_forecasting(
     "start_timestamp"
 )
 do_fixed_horizon_local_forecasting(
-    "sample",
-    "nsridgecv",
-    "sample.tsf",
+    "tourism_yearly",
+    "nslassocv",
+    "tourism_yearly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
+do_fixed_horizon_local_forecasting(
+    "tourism_yearly",
+    "nslassolarscv",
+    "tourism_yearly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
+do_fixed_horizon_local_forecasting(
+    "tourism_yearly",
+    "nselasticnetcv",
+    "tourism_yearly_dataset.tsf",
     "series_name",
     "start_timestamp"
 )

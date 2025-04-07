@@ -128,7 +128,14 @@ do_fixed_horizon_local_forecasting <- function(dataset_name, method, input_file_
       
       # Forecasting
       
-      current_method_forecasts <- eval(parse(text = paste0("get_", method, "_forecasts(series, forecast_horizon)")))
+      current_method_forecasts <- try(eval(parse(text = paste0("get_", method, "_forecasts(series, forecast_horizon)"))), silent=TRUE)
+      if (inherits(current_method_forecasts, "try-error"))
+      {
+        if (method %in% c("nslassocv", "nsridgecv", "nslassolarscv", "nselasticnetcv"))
+        {
+          current_method_forecasts <- get_nslinearmodel_forecasts(series, forecast_horizon, model = method)
+        }
+      }
       
       if(typeof(current_method_forecasts) == "list")
         current_method_forecasts <- current_method_forecasts[[1]]
