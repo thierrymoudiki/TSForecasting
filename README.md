@@ -121,6 +121,57 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+
+do_fixed_horizon_local_forecasting(
+    "tourism_monthly",
+    "rlmtheta",
+    "tourism_monthly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
+do_fixed_horizon_local_forecasting(
+    "tourism_quarterly",
+    "rlmtheta",
+    "tourism_quarterly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
+do_fixed_horizon_local_forecasting(
+    "car_parts_dataset_without_missing_values",
+    "rlmtheta",
+    "car_parts_dataset_without_missing_values.tsf",
+    "series_name",
+    "start_timestamp",
+    external_forecast_horizon = 12L
+)
+
+do_fixed_horizon_local_forecasting(
+    "hospital",
+    "rlmtheta",
+    "hospital_dataset.tsf",
+    "series_name",
+    "start_timestamp",
+    external_forecast_horizon = 12L
+)
+
+do_fixed_horizon_local_forecasting(
+    "covid_deaths_dataset",
+    "rlmtheta",
+    "covid_deaths_dataset.tsf",
+    "series_name",
+    "start_timestamp",
+    external_forecast_horizon = 30L
+)
+
+do_fixed_horizon_local_forecasting(
+    "m4_quarterly",
+    "rlmtheta",
+    "m4_quarterly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
 ```
 
 
