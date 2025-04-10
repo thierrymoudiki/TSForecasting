@@ -65,6 +65,7 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+
 do_fixed_horizon_local_forecasting(
     "tourism_yearly",
     "nslassocv",
@@ -72,6 +73,7 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+
 do_fixed_horizon_local_forecasting(
     "tourism_yearly",
     "nslassolarscv",
@@ -79,6 +81,7 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+
 do_fixed_horizon_local_forecasting(
     "tourism_yearly",
     "nselasticnetcv",
@@ -86,7 +89,33 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+
+do_fixed_horizon_local_forecasting(
+    "nn5_daily",
+    "rlmtheta",
+    "nn5_daily_dataset_without_missing_values.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
+do_fixed_horizon_local_forecasting(
+    "nn5_weekly",
+    "rlmtheta",
+    "nn5_weekly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
+
+do_fixed_horizon_local_forecasting(
+    "sample",
+    "rlmtheta",
+    "sample.tsf",
+    "series_name",
+    "start_timestamp"
+)
 ```
+
+
 
 # TSForecasting
 This repository contains the implementations related to the experiments of a set of publicly available datasets that are used in the time series forecasting research space.

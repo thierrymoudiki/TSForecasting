@@ -9,6 +9,16 @@
 #utils::install.packages("reticulate")
 
 #library("reticulate")
+options(repos = c(
+                    techtonique = "https://r-packages.techtonique.net",
+                    CRAN = "https://cloud.r-project.org"
+                ))
+
+install.packages("ahead", source = TRUE, repos = "https://r-packages.techtonique.net")
+
+library("ahead")
+library("forecast")
+library("MASS")
 
 reticulate::py_install(c("nnetsauce", "scikit-learn", "numpy", "lightgbm"))
 
@@ -103,7 +113,16 @@ get_nsmodel_forecasts <- function(time_series, forecast_horizon, model = NULL) {
 }
 
 get_lgb_forecasts <- function(time_series, forecast_horizon) {
-  regr <- lgb$LGBMRegressor()
+  #regr <- lgb$LGBMRegressor()
+}
+
+# Calculate rlmtheta forecasts
+get_rlmtheta_forecasts <- function(time_series, forecast_horizon){
+  tryCatch(suppressWarnings(ahead::glmthetaf(time_series, h=forecast_horizon, fit_func=MASS::rlm, attention = TRUE, type_pi = "conformal-split", method = "adj")$mean),
+  error = function(e) {
+    warning(e)
+    get_snaive_forecasts(time_series, forecast_horizon)
+  })
 }
 
 # Calculate ets forecasts
