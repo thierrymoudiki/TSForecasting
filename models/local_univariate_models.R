@@ -117,12 +117,18 @@ get_lgb_forecasts <- function(time_series, forecast_horizon) {
 }
 
 # Calculate rlmtheta forecasts
-get_rlmtheta_forecasts <- function(time_series, forecast_horizon){
-  tryCatch(suppressWarnings(ahead::glmthetaf(time_series, h=forecast_horizon, fit_func=MASS::rlm, attention = TRUE, type_pi = "conformal-split", method = "adj")$mean),
-  error = function(e) {
-    warning(e)
-    get_snaive_forecasts(time_series, forecast_horizon)
-  })
+get_rlmtheta_forecasts <- function(time_series, forecast_horizon, model=NULL){
+  if (model == "rlm")
+  {
+      tryCatch(suppressWarnings(ahead::glmthetaf(time_series, h=forecast_horizon, fit_func=MASS::rlm, attention = TRUE, type_pi = "conformal-split", method = "adj")$mean),
+    error = function(e) {
+      warning(e)
+      get_snaive_forecasts(time_series, forecast_horizon)
+    })
+  }
+
+  
+  
 }
 
 # Calculate ets forecasts

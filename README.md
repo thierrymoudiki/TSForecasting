@@ -113,6 +113,14 @@ do_fixed_horizon_local_forecasting(
     "series_name",
     "start_timestamp"
 )
+
+do_fixed_horizon_local_forecasting(
+    "tourism_yearly",
+    "rlmtheta",
+    "tourism_yearly_dataset.tsf",
+    "series_name",
+    "start_timestamp"
+)
 ```
 
 
